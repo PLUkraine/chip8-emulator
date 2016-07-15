@@ -17,4 +17,15 @@ Then, on Linux, simply type in the console in the project's folder
 make
 ./chip8
 ```
+# Controls
+CHIP-8 uses numpad as a input device. In this emulator, keys
 
+1 2 3 4
+
+q w e r
+
+a s d f
+
+z x c v
+
+are inputs for the emulator. Each game uses different control scheme so have fun finding out what key does what!
