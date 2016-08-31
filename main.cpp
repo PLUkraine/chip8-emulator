@@ -1,7 +1,7 @@
 //Using SDL, SDL_image, standard IO, math, and strings
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_audio.h>
 #include <stdio.h>
 #include <string>
 #include <cmath>
@@ -28,11 +28,14 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
-// audio sample
-Mix_Music *gMusic = NULL;
-
 // texture to draw on
 SDL_Texture* texture;
+
+// audio specifications
+SDL_AudioSpec obtained;
+
+// sound queue data
+static std::deque<std::pair<unsigned/*samples*/,bool/*volume*/>> AudioQueue;
 
 bool init()
 {
@@ -86,11 +89,29 @@ bool init()
 						 printf("texture could not initialize! SDL_image Error: %s\n", IMG_GetError() );
 						 success = false;
 					 } else {
-						 //Initialize SDL_mixer
-						 if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) {
-							 printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
-							 success = false;
-						 }
+						//Initialize SDL_audio
+						SDL_AudioSpec spec;
+						spec.freq     = 44100;
+						spec.format   = AUDIO_S16SYS;
+						spec.channels = 2;
+						spec.samples  = spec.freq / 20; // 0.05 seconds of latency
+						spec.callback = [](void*, Uint8* stream, int len)
+						{
+							// Generate square wave
+							short* target = (short*)stream;
+							while(len > 0 && !AudioQueue.empty())
+							{
+								auto& data = AudioQueue.front();
+								for(; len && data.first; target += 2, len -= 4, --data.first)
+									target[0] = target[1] = data.second*300*((len&128)-64);
+								if(!data.first) AudioQueue.pop_front();
+							}
+						};
+						if(SDL_OpenAudio(&spec, &obtained) != 0 ) {
+							printf( "SDL_audio could not initialize! SDL_mixer Error: %s\n", SDL_GetError());
+							success = false;
+						}
+						SDL_PauseAudio(0);
 					 }
 				}
 			}
@@ -105,13 +126,6 @@ bool loadMedia()
 	//Loading success flag
 	bool success = true;
 
-	//Load sound effects
-	gMusic = Mix_LoadMUS( "Beep1.wav" );
-	if( gMusic == NULL ) {
-		printf( "Failed to load beep music! SDL_mixer Error: %s\n", Mix_GetError() );
-		success = false;
-	}
-
 	return success;
 }
 
@@ -123,11 +137,9 @@ void close()
 	gWindow = NULL;
 	gRenderer = NULL;
 
-	Mix_FreeMusic(gMusic);
-	gMusic = NULL;
+	SDL_AudioQuit();
 
 	//Quit SDL subsystems
-	Mix_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
@@ -135,13 +147,14 @@ void close()
 int main( int argc, char* args[] )
 {
 	if (argc != 2) {
-		printf("Usage: chip8 filename\n");
+		printf("Usage: Chip8Emul filename\n");
 		return 1;
 	}
-    Chip8Struct cpu;
-    cpu.clear();
-    Chip8Logic logic;
-    logic.loadFontset(cpu.mem);
+
+	Chip8Struct cpu;
+	cpu.clear();
+	Chip8Logic logic;
+	logic.loadFontset(cpu.mem);
 	logic.loadProgram(cpu.mem, cpu.waitKey, cpu.PC, args[1]);
 	// map keyboard to keys in chip8;
 	std::map<int,int> keymap{
@@ -186,16 +199,7 @@ int main( int argc, char* args[] )
 					logic.executeCommand(cpu, logic.getNextOpcode(cpu.mem, cpu.PC, cpu.waitKey));
 				}
 
-				if (cpu.SoundTimer != 0) {
-					//Play the music
-					if (!Mix_PlayingMusic())
-						Mix_PlayMusic( gMusic, -1 );
-				} else {
-					//Stop the music
-					Mix_HaltMusic();
-				}
-
-				//Handle events on queue
+				// Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
 					std::map<int,int>::iterator it;
@@ -208,7 +212,7 @@ int main( int argc, char* args[] )
 						it = keymap.find(e.key.keysym.sym);
 						if (it == keymap.end()) break;
 						if (it->second == -1) {quit = true; break;}
-						logic.setKeypad(cpu.V, cpu.keys, cpu.waitKey,  it->second, SDL_KEYDOWN == e.type);
+						logic.setKeypad(cpu.V, cpu.keys, cpu.waitKey, it->second, SDL_KEYDOWN == e.type);
 						break;
 					}
 				}
@@ -221,6 +225,13 @@ int main( int argc, char* args[] )
 					frames_done += frames;
 					int st = std::min(frames, cpu.SoundTimer+0); cpu.SoundTimer -= st;
 					int dt = std::min(frames, cpu.DelayTimer+0); cpu.DelayTimer -= dt;
+
+					// Render audio
+					SDL_LockAudio();
+					 AudioQueue.emplace_back( obtained.freq*(         st)/60,  true );
+					 AudioQueue.emplace_back( obtained.freq*(frames - st)/60, false );
+					SDL_UnlockAudio();
+
 					Uint32 pixels[CHIP8_W*CHIP8_H]; logic.renderTo(cpu.disp, pixels);
 
 					SDL_SetRenderDrawColor(gRenderer, 0,0,0,0);
