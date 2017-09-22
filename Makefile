@@ -7,4 +7,4 @@ DEPS = Chip8.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 chip8: Chip8.o main.o
-	$(CC) $(LIBS) -o chip8 Chip8.o main.o
+	$(CC) -o chip8 Chip8.o main.o $(LIBS)
