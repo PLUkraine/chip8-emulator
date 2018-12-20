@@ -1,5 +1,7 @@
 # Chip8 Emulator
 
+![Screenshot](https://i.postimg.cc/MGhg8hzF/Screen-Shot-2018-12-20-at-3-01-18-PM.png)
+
 ## About
 This is a **[CHIP-8](https://en.wikipedia.org/wiki/CHIP-8)** computer emulator. This app will compile on *Windows*, *Linux* and *Mac*.  
 Games for CHIP-8 can be found [here](http://www.zophar.net/pdroms/chip8/chip-8-games-pack.html) or [on GitHub](https://github.com/dmatlack/chip8/tree/master/roms). Note that some games may not work.  
