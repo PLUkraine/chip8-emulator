@@ -1,23 +1,19 @@
 # Chip8 Emulator
+
 ## About
-This is a simple [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) emulator. Can be compiled on Windows and Linux.
+This is a **[CHIP-8](https://en.wikipedia.org/wiki/CHIP-8)** computer emulator. This app will compile on *Windows*, *Linux* and *Mac*.  
+Games for CHIP-8 can be found [here](http://www.zophar.net/pdroms/chip8/chip-8-games-pack.html) or [on GitHub](https://github.com/dmatlack/chip8/tree/master/roms). Note that some games may not work.  
+See [CHIP-8 documentation](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) for further details. It is the essential document for the developers.
 
-Games for CHIP-8 can be found [here](http://www.zophar.net/pdroms/chip8/chip-8-games-pack.html). Not all games work properly (it might be caused either by bugs or specification ambiguity).
+## Build
+To compile this app use **[CMake](https://cmake.org/)** >= 3.1. You will need to download and install **[SDL2](https://www.libsdl.org/download-2.0.php)** development library.  
+For **Linux** users: SDL2 can be installed through *package manager*.  
+For **Mac** users: SDL2 can be installed through *Homebrew*.
 
-[Usefull CHIP-8 documentation](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
-## Dependencies
-This emulator was written using [SDL2](https://www.libsdl.org/), SDL2_mixer, SDL2_image development libraries and a g++ compiler.
-# Build
-To build and run this project, install SDL libraries. Installation process really depends on the OS of your choise. Try [this](http://lazyfoo.net/SDL_tutorials/lesson01/) guide.
+## Run
+Download some ROM file from this [page](https://github.com/dmatlack/chip8/tree/master/roms). Start this emulator from the command line with 1 argument - path to the ROM file.
 
-Besides GCC you can use Visual C++ compiler.
-
-Then, on Linux, simply type in the console in the project's folder
-```shell
-make
-./chip8
-```
-# Controls
+## Controls
 CHIP-8 uses numpad as a input device. In this emulator, keys
 
 1 2 3 4
