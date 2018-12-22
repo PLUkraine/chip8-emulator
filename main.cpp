@@ -6,7 +6,7 @@
 #include <chrono>
 #include <map>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "Chip8.h"
 

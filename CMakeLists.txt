@@ -10,10 +10,10 @@ project(chip8-emulator)
 # Find SDL2 library
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
 
 # main app
 add_executable(${PROJECT_NAME} "main.cpp" "Chip8.cpp" "Chip8.h")
+target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY})
 
 # set c++11 standard
